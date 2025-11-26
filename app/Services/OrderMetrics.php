@@ -159,7 +159,6 @@ class OrderMetrics
             ->first();
     }
 
-    /** Tabela de pedidos (formato simples pra view) */
     public function ordersTable(): Collection
     {
         return $this->orders->map(
@@ -202,6 +201,93 @@ class OrderMetrics
             'delivered_orders' => $this->deliveredOrders(),
             'unique_customers' => $this->uniqueCustomers(),
             'refund_rate'      => $this->refundRate(),
+            'average_ticket'   => $this->averageTicket(),
         ];
+    }
+
+
+    public function averageTicket(): float
+    {
+        $totalOrders = max(1, $this->totalOrders());
+        return $this->totalRevenue() / $totalOrders;
+    }
+
+    public function topProductsByRevenue(int $limit = 5): Collection
+    {
+        $lineItems = $this->orders->flatMap(
+            function (array $order) {
+                return $order['line_items'] ?? [];
+            }
+        );
+
+        $grouped = $lineItems->groupBy(
+            function ($item) {
+                return $item['title'] ?? $item['name'] ?? 'Desconhecido';
+            }
+        );
+
+        $ranked = $grouped->map(
+            function (Collection $items, string $name) {
+                $revenue = $items->sum(
+                    function ($item) {
+                        return self::toNumber($item['local_currency_item_total_price'] ?? $item['total_price'] ?? 0);
+                    }
+                );
+
+                $quantity = $items->sum('quantity');
+
+                return [
+                    'name'     => $name,
+                    'quantity' => $quantity,
+                    'revenue'  => $revenue,
+                ];
+            }
+        );
+
+        return $ranked
+            ->sortByDesc('revenue')
+            ->values()
+            ->take($limit);
+    }
+
+    public function topCitiesByRevenue(int $limit = 10): Collection
+    {
+        $grouped = $this->orders->groupBy(
+            function (array $order) {
+                $shipping = $order['shipping_address'] ?? [];
+                $billing  = $order['billing_address'] ?? [];
+
+                $city    = $shipping['city'] ?? $billing['city'] ?? 'Desconhecida';
+                $country = $shipping['country'] ?? $billing['country'] ?? '';
+
+                return $city . '|' . $country;
+            }
+        );
+
+        $ranked = $grouped->map(
+            function (Collection $orders, string $key) {
+                [$city, $country] = explode('|', $key);
+
+                $revenue = $orders->sum(
+                    function (array $order) {
+                        return self::toNumber($order['local_currency_amount'] ?? 0);
+                    }
+                );
+
+                $count = $orders->count();
+
+                return [
+                    'city'    => $city,
+                    'country' => $country,
+                    'orders'  => $count,
+                    'revenue' => $revenue,
+                ];
+            }
+        );
+
+        return $ranked
+            ->sortByDesc('revenue')
+            ->values()
+            ->take($limit);
     }
 }

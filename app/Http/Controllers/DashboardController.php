@@ -21,6 +21,8 @@ class DashboardController extends Controller
             'orders'          => $metrics->ordersTable(),
             'metrics'         => $metrics->toArray(),
             'bestProduct'     => $metrics->bestSellingProduct(),
+            'topProducts'   => $metrics->topProductsByRevenue(),
+            'topCities'     => $metrics->topCitiesByRevenue(),
         ]);
     }
 }

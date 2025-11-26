@@ -28,6 +28,45 @@
         </p>
     @endif
 
+    <li>Ticket médio: {{ number_format($metrics['average_ticket'], 2, ',', '.') }}</li>
+
+    @if(isset($topProducts) && $topProducts->isNotEmpty())
+        <h2>Top 5 produtos por receita</h2>
+        <ul>
+            @foreach($topProducts as $product)
+                <li>
+                    {{ $product['name'] }} –
+                    Qtd: {{ $product['quantity'] }} –
+                    Receita: {{ number_format($product['revenue'], 2, ',', '.') }}
+                </li>
+            @endforeach
+        </ul>
+    @endif
+
+    @if(isset($topCities) && $topCities->isNotEmpty())
+        <h2>Top 10 cidades por receita</h2>
+        <table border="1" cellpadding="4" cellspacing="0">
+            <thead>
+            <tr>
+                <th>Cidade</th>
+                <th>País</th>
+                <th>Pedidos</th>
+                <th>Receita</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach($topCities as $city)
+                <tr>
+                    <td>{{ $city['city'] }}</td>
+                    <td>{{ $city['country'] }}</td>
+                    <td>{{ $city['orders'] }}</td>
+                    <td>{{ number_format($city['revenue'], 2, ',', '.') }}</td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+    @endif
+
     <h2>Pedidos (primeiros 20)</h2>
     <table border="1" cellpadding="4" cellspacing="0">
         <thead>
