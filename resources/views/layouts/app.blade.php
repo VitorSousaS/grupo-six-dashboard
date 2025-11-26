@@ -25,7 +25,7 @@
     </main>
 
     <footer class="max-w-6xl mx-auto px-4 pb-6 text-xs text-slate-500">
-        Dashboard gerado a partir de API externa de pedidos (dados fictícios).
+        Dashboard de pedidos (gerado a partir de API externa - dados fictícios).
     </footer>
 </body>
 </html>

@@ -23,6 +23,7 @@ class DashboardController extends Controller
             'bestProduct'     => $metrics->bestSellingProduct(),
             'topProducts'   => $metrics->topProductsByRevenue(),
             'topCities'     => $metrics->topCitiesByRevenue(),
+            'salesByDay'    => $metrics->salesByDay()
         ]);
     }
 }

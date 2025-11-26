@@ -290,4 +290,40 @@ class OrderMetrics
             ->values()
             ->take($limit);
     }
+
+    public function salesByDay(): array
+    {
+        $grouped = $this->orders
+            ->filter(
+                function (array $order) {
+                    return !empty($order['created_at'] ?? null);
+                }
+            )
+            ->groupBy(
+                function (array $order) {
+                    $createdAt = $order['created_at'];
+                    return substr($createdAt, 0, 10); // "YYYY-MM-DD"
+                }
+            );
+
+        $perDay = $grouped->map(
+            function (Collection $orders, string $date) {
+                $revenue = $orders->sum(
+                    function (array $order) {
+                        return self::toNumber($order['local_currency_amount'] ?? 0);
+                    }
+                );
+
+                return [
+                    'date'    => $date,
+                    'revenue' => $revenue,
+                ];
+            }
+        );
+
+        return $perDay
+            ->sortBy('date')
+            ->values()
+            ->all();
+    }
 }

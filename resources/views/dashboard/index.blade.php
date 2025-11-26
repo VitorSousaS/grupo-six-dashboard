@@ -12,6 +12,20 @@
         </p>
     </div>
 
+    @if(!empty($salesByDay))
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
+            <h3 class="text-sm font-semibold text-slate-700 mb-2">
+                Faturamento por dia
+            </h3>
+            <p class="text-xs text-slate-500 mb-3">
+                Soma de <code>local_currency_amount</code> agrupada pela data de criação do pedido.
+            </p>
+            <div class="h-64">
+                <canvas id="salesByDayChart"></canvas>
+            </div>
+        </div>
+    @endif
+
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
         <div class="bg-white rounded-xl shadow-sm px-4 py-3">
             <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total de pedidos</p>
@@ -193,4 +207,68 @@
             </table>
         </div>
     </div>
+
+    @if(!empty($salesByDay))
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <script>
+            (function () {
+                const salesData = @json($salesByDay);
+
+                if (!Array.isArray(salesData) || salesData.length === 0) {
+                    return;
+                }
+
+                const labels = salesData.map(item => item.date);
+                const values = salesData.map(item => item.revenue);
+
+                const ctx = document.getElementById('salesByDayChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Faturamento por dia',
+                            data: values,
+                            tension: 0.3,
+                            fill: true,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Data'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Receita'
+                                },
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (ctx) {
+                                        const value = ctx.parsed.y ?? 0;
+                                        return 'Receita: ' + value.toFixed(2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            })();
+        </script>
+    @endif
 @endsection
