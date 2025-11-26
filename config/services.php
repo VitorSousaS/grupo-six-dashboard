@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'services' => [
+        'dashboard_api' => [
+            'url' => env('DASHBOARD_API_URL'),
+        ],
+    ],
+
 ];

@@ -9,8 +9,14 @@ use Illuminate\Support\Facades\Log;
 
 class OrderService
 {
-    protected string $endpoint = 'https://dev-crm.ogruposix.com/candidato-teste-pratico-backend-dashboard/test-orders';
+    protected string $endpoint;
 
+    public function __construct()
+    {
+        $this->endpoint = config('services.dashboard_api.url')
+            ?? env('DASHBOARD_API_URL', '');
+    }
+    
     public function getOrders(): Collection
     {
         return Cache::remember('test_orders', now()->addMinutes(120), function () {
