@@ -187,14 +187,50 @@
                 </thead>
                 <tbody>
                 @foreach($orders->take(20) as $order)
-                    <tr class="border-b last:border-0 hover:bg-slate-50">
+                    @php
+                        $isRefunded = ($order['status'] ?? '') === 'Refunded';
+                    @endphp
+                    <tr class="border-b last:border-0 hover:bg-slate-50 {{ $isRefunded ? 'bg-rose-50/40' : '' }}">
                         <td class="py-2 pr-3">{{ $order['id'] }}</td>
                         <td class="py-2 pr-3">{{ $order['order_no'] }}</td>
                         <td class="py-2 pr-3 whitespace-nowrap">{{ $order['created_at'] }}</td>
                         <td class="py-2 pr-3 whitespace-nowrap">{{ $order['customer'] }}</td>
                         <td class="py-2 pr-3 whitespace-nowrap text-slate-500">{{ $order['email'] }}</td>
-                        <td class="py-2 pr-3">{{ $order['status'] }}</td>
-                        <td class="py-2 pr-3">{{ $order['fulfillment_status'] }}</td>
+                        <td class="py-2 pr-3">
+                            @php
+                                $status = $order['status'] ?? '';
+                                $statusLabel = $status;
+
+                                $statusClasses = match ($status) {
+                                    'Fulfilled' => 'bg-emerald-100 text-emerald-700',
+                                    'Partially Fulfilled' => 'bg-amber-100 text-amber-700',
+                                    'Unfulfilled' => 'bg-slate-100 text-slate-700',
+                                    'Refunded' => 'bg-rose-100 text-rose-700',
+                                    default => 'bg-slate-100 text-slate-700',
+                                };
+                            @endphp
+
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $statusClasses }}">
+                                {{ $statusLabel }}
+                            </span>
+                        </td>
+                        <td class="py-2 pr-3">
+                            @php
+                                $fs = $order['fulfillment_status'] ?? '';
+                                $fsLabel = $fs ?: '—';
+
+                                $fsClasses = match ($fs) {
+                                    'Fully Fulfilled' => 'bg-emerald-50 text-emerald-700',
+                                    'Partially Fulfilled' => 'bg-amber-50 text-amber-700',
+                                    'Unfulfilled' => 'bg-slate-50 text-slate-700',
+                                    default => 'bg-slate-50 text-slate-500',
+                                };
+                            @endphp
+
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $fsClasses }}">
+                                {{ $fsLabel }}
+                            </span>
+                        </td>
                         <td class="py-2 pr-3 text-right">
                             {{ number_format($order['amount'], 2, ',', '.') }}
                         </td>
