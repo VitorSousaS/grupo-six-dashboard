@@ -27,7 +27,12 @@ class OrderService
 
             $data = $response->json();
 
-            return collect($data);
+            $ordersWrapped = $data['orders'] ?? [];
+
+            return collect($ordersWrapped)
+                ->map(function ($item) {
+                    return $item['order'] ?? $item;
+                });
         });
     }
 }

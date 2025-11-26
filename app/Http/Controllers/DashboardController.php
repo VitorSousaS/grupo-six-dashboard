@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\OrderMetrics;
 use App\Services\OrderService;
 use Illuminate\View\View;
 
@@ -14,9 +15,12 @@ class DashboardController extends Controller
     public function index(): View
     {
         $orders = $this->orderService->getOrders();
+        $metrics = new OrderMetrics($orders);
 
         return view('dashboard.index', [
-            'orders' => $orders,
+            'orders'          => $metrics->ordersTable(),
+            'metrics'         => $metrics->toArray(),
+            'bestProduct'     => $metrics->bestSellingProduct(),
         ]);
     }
 }
