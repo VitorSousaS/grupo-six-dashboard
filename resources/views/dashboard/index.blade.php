@@ -216,6 +216,69 @@
         </div>
     @endif
 
+    @if(isset($topCities) && $topCities->isNotEmpty())
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-8">
+            <h3 class="text-sm font-semibold text-slate-700 mb-4">
+                Top 10 cidades por receita
+            </h3>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead>
+                    <tr class="border-b text-xs uppercase text-slate-500">
+                        <th class="py-2 pr-4">Rank</th>
+                        <th class="py-2 pr-4">Cidade</th>
+                        <th class="py-2 pr-4">País</th>
+                        <th class="py-2 pr-4 text-center">Pedidos</th>
+                        <th class="py-2 pr-4 text-right">Receita</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    @foreach($topCities as $index => $city)
+                        @php
+                            $rank = $index + 1;
+
+                            $badgeColor = match($rank) {
+                                1 => 'bg-amber-300 text-amber-900',
+                                2 => 'bg-slate-300 text-slate-800',
+                                3 => 'bg-amber-600 text-white',
+                                default => 'bg-slate-100 text-slate-700',
+                            };
+                        @endphp
+
+                        <tr class="border-b last:border-0 hover:bg-slate-50">
+                            <td class="py-2 pr-4 text-center">
+                                <span class="px-2 py-0.5 rounded-md text-xs font-semibold {{ $badgeColor }}">
+                                    #{{ $rank }}
+                                </span>
+                            </td>
+
+                            <td class="py-2 pr-4 font-medium text-slate-800 text-center">
+                                {{ $city['city'] }}
+                            </td>
+
+                            <td class="py-2 pr-4 text-slate-600 text-center">
+                                {{ $city['country'] }}
+                            </td>
+
+                            <td class="py-2 pr-4 text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-900 text-white text-xs font-semibold">
+                                    {{ $city['orders'] }}
+                                </span>
+                            </td>
+
+                            <td class="py-2 pr-4 text-right font-semibold text-emerald-600">
+                                R$ {{ number_format($city['revenue'], 2, ',', '.') }}
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-2 mb-8">
         @php
             $refundRate = $metrics['refund_rate'] ?? 0;
@@ -340,69 +403,6 @@
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-xs font-semibold">
                                     {{ number_format($percent, 2, ',', '.') }}%
                                 </span>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    @endif
-
-    @if(isset($topCities) && $topCities->isNotEmpty())
-        <div class="bg-white rounded-xl shadow-sm p-4 mb-8">
-            <h3 class="text-sm font-semibold text-slate-700 mb-4">
-                Top 10 cidades por receita
-            </h3>
-
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead>
-                    <tr class="border-b text-xs uppercase text-slate-500">
-                        <th class="py-2 pr-4">Rank</th>
-                        <th class="py-2 pr-4">Cidade</th>
-                        <th class="py-2 pr-4">País</th>
-                        <th class="py-2 pr-4 text-center">Pedidos</th>
-                        <th class="py-2 pr-4 text-right">Receita</th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    @foreach($topCities as $index => $city)
-                        @php
-                            $rank = $index + 1;
-
-                            $badgeColor = match($rank) {
-                                1 => 'bg-amber-300 text-amber-900',
-                                2 => 'bg-slate-300 text-slate-800',
-                                3 => 'bg-amber-600 text-white',
-                                default => 'bg-slate-100 text-slate-700',
-                            };
-                        @endphp
-
-                        <tr class="border-b last:border-0 hover:bg-slate-50">
-                            <td class="py-2 pr-4 text-center">
-                                <span class="px-2 py-0.5 rounded-md text-xs font-semibold {{ $badgeColor }}">
-                                    #{{ $rank }}
-                                </span>
-                            </td>
-
-                            <td class="py-2 pr-4 font-medium text-slate-800 text-center">
-                                {{ $city['city'] }}
-                            </td>
-
-                            <td class="py-2 pr-4 text-slate-600 text-center">
-                                {{ $city['country'] }}
-                            </td>
-
-                            <td class="py-2 pr-4 text-center">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-900 text-white text-xs font-semibold">
-                                    {{ $city['orders'] }}
-                                </span>
-                            </td>
-
-                            <td class="py-2 pr-4 text-right font-semibold text-emerald-600">
-                                R$ {{ number_format($city['revenue'], 2, ',', '.') }}
                             </td>
                         </tr>
                     @endforeach
