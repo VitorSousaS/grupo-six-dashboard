@@ -27,6 +27,7 @@ git clone https://github.com/VitorSousaS/grupo-six-dashboard.git
 
 ### 2️⃣ Instale as dependências
 ```bash
+cd grupo-six-dashboard/
 composer install
 ```
 
@@ -35,7 +36,7 @@ Crie o arquivo:
 ```bash
 cp .env.example .env
 ```
-Edite a variável do teste:
+Edite a variável do teste se necessário:
 ```
 TEST_ORDERS_URL=https://dev-crm.ogruposix.com/candidato-teste-pratico-backend-dashboard/test-orders
 ```
