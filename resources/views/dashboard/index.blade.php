@@ -260,39 +260,83 @@
         </div>
     @endif
 
-    <div class="bg-white rounded-xl shadow-sm p-4">
+    <div id="orders-table" class="bg-white rounded-xl shadow-sm p-4">
         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-3">
             <div>
                 <h3 class="text-sm font-semibold text-slate-700">
-                    Pedidos (primeiros 20)
+                    Pedidos
                 </h3>
                 <span class="text-xs text-slate-400">
                     Total: {{ $metrics['total_orders'] }} pedidos
                 </span>
             </div>
 
-            <form method="GET" action="{{ route('dashboard') }}" class="flex items-center gap-2 text-xs md:text-sm">
-                <label for="status" class="text-slate-600">
-                    Status:
-                </label>
-                <select
-                    id="status"
-                    name="status"
-                    class="border border-slate-300 rounded-md px-2 py-1 text-xs md:text-sm bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
-                >
-                    @foreach($allowedStatuses as $value => $label)
-                        <option value="{{ $value }}" {{ $selectedStatus === $value ? 'selected' : '' }}>
-                            {{ $label }}
-                        </option>
-                    @endforeach
-                </select>
+            <form method="GET" 
+                  action="{{ route('dashboard') }}#orders-table" 
+                  class="flex flex-col md:flex-row md:items-center gap-2 text-xs md:text-sm">
+                <div class="flex items-center gap-2">
+                    <label for="status" class="text-slate-600">
+                        Status:
+                    </label>
+                    <select
+                        id="status"
+                        name="status"
+                        class="border border-slate-300 rounded-md px-2 py-1 text-xs md:text-sm bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+                    >
+                        @foreach($allowedStatuses as $value => $label)
+                            <option value="{{ $value }}" {{ $selectedStatus === $value ? 'selected' : '' }}>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-                <button
-                    type="submit"
-                    class="inline-flex items-center px-3 py-1 rounded-md bg-slate-900 text-white text-xs md:text-sm hover:bg-slate-800"
-                >
-                    Aplicar
-                </button>
+                <div class="flex items-center gap-2">
+                    <label for="search" class="text-slate-600">
+                        Buscar:
+                    </label>
+                    <input
+                        type="text"
+                        id="search"
+                        name="search"
+                        value="{{ $search ?? '' }}"
+                        placeholder="ID, número, cliente, email..."
+                        class="border border-slate-300 rounded-md px-2 py-1 text-xs md:text-sm bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+                    />
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <label for="per_page" class="text-slate-600">
+                        Por página:
+                    </label>
+                    <select
+                        id="per_page"
+                        name="per_page"
+                        class="border border-slate-300 rounded-md px-2 py-1 text-xs md:text-sm bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+                    >
+                        @foreach([10, 20, 50, 100] as $size)
+                            <option value="{{ $size }}" {{ ($perPage ?? 20) == $size ? 'selected' : '' }}>
+                                {{ $size }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="flex gap-2">
+                    <button
+                        type="submit"
+                        class="inline-flex items-center px-3 py-1 rounded-md bg-slate-900 text-white text-xs md:text-sm hover:bg-slate-800"
+                    >
+                        Aplicar
+                    </button>
+
+                    <a
+                        href="{{ route('dashboard') }}"
+                        class="inline-flex items-center px-3 py-1 rounded-md border border-slate-300 text-slate-600 text-xs md:text-sm hover:bg-slate-50"
+                    >
+                        Limpar
+                    </a>
+                </div>
             </form>
         </div>
 
@@ -314,7 +358,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                @foreach($orders->take(20) as $order)
+                @foreach($orders as $order)
                     @php
                         $isRefunded = ($order['status'] ?? '') === 'Refunded';
                     @endphp
@@ -369,6 +413,10 @@
                 @endforeach
                 </tbody>
             </table>
+        </div>
+
+        <div class="mt-3">
+            {{ $orders->links() }}
         </div>
     </div>
 

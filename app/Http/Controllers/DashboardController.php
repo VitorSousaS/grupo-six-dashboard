@@ -7,6 +7,10 @@ use App\Services\OrderMetrics;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
+
 class DashboardController extends Controller
 {
     public function __construct(
@@ -15,13 +19,12 @@ class DashboardController extends Controller
 
     public function index(Request $request): View
     {
-        $orders = $this->orderService->getOrders();
-        $metrics = new OrderMetrics($orders);
-        $metricsArray = $metrics->toArray();
-
-        $ordersTable = $metrics->ordersTable();
+        $orders         = $this->orderService->getOrders();
+        $metrics        = new OrderMetrics($orders);
+        $metricsArray   = $metrics->toArray();
+        $ordersTable    = $metrics->ordersTable();
+         
         $selectedStatus = $request->query('status', 'all');
-
         $allowedStatuses = [
             'all'                => 'Todos',
             'Fulfilled'          => 'Fulfilled',
@@ -35,10 +38,47 @@ class DashboardController extends Controller
         }
 
         if ($selectedStatus !== 'all') {
-            $ordersTable = $ordersTable
-                ->filter(fn (array $order) => ($order['status'] ?? '') === $selectedStatus)
-                ->values();
+            $ordersTable = $ordersTable->filter(
+                function (array $order) use ($selectedStatus) {
+                    return ($order['status'] ?? '') === $selectedStatus;
+                }
+            );
         }
+
+        $search = trim((string) $request->get('search', ''));
+
+        if ($search !== '') {
+            $term = mb_strtolower($search);
+
+            $ordersTable = $ordersTable->filter(function (array $order) use ($term) {
+                return str_contains(mb_strtolower((string) $order['customer']), $term)
+                    || str_contains(mb_strtolower((string) $order['email']), $term)
+                    || str_contains((string) $order['order_no'], $term)
+                    || str_contains((string) $order['id'], $term);
+            });
+        }
+
+        $perPage = (int) $request->get('per_page', 20);
+        $perPage = max(5, min($perPage, 100)); 
+        $currentPage = Paginator::resolveCurrentPage() ?: 1;
+
+        $total = $ordersTable->count();
+
+        $currentPageItems = $ordersTable
+            ->slice(($currentPage - 1) * $perPage, $perPage)
+            ->values();
+
+        $paginatedOrders = new LengthAwarePaginator(
+            $currentPageItems,
+            $total,
+            $perPage,
+            $currentPage,
+            [
+                'path'  => $request->url(),
+                'query' => $request->query(),
+                'fragment' => 'orders-table',
+            ]
+        );
 
         $metricsArray['total_revenue_formatted'] = number_format($metricsArray['total_revenue'], 2, ',', '.');
         $metricsArray['total_revenue_usd_formatted'] = number_format($metricsArray['total_revenue_usd'], 2, '.', ',');
@@ -53,7 +93,10 @@ class DashboardController extends Controller
         $metricsArray['refund_rate_formatted'] = number_format($metricsArray['refund_rate'], 2, ',', '.') . '%';
         
         return view('dashboard.index', [
-            'orders'          => $ordersTable,
+            'orders'          => $paginatedOrders,
+            'search'          => $search,
+            'perPage'         => $perPage,
+            
             'metrics'         => $metricsArray,
             'bestProduct'     => $metrics->bestSellingProduct(),
             'topProducts'     => $metrics->topProductsByRevenue(),
