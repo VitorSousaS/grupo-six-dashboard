@@ -12,11 +12,12 @@ class DashboardController extends Controller
     public function __construct(
         protected OrderService $orderService
     ) {}
-    
+
     public function index(Request $request): View
     {
         $orders = $this->orderService->getOrders();
         $metrics = new OrderMetrics($orders);
+        $metricsArray = $metrics->toArray();
 
         $ordersTable = $metrics->ordersTable();
         $selectedStatus = $request->query('status', 'all');
@@ -39,9 +40,12 @@ class DashboardController extends Controller
                 ->values();
         }
 
+        $metricsArray['total_revenue_formatted'] = number_format($metricsArray['total_revenue'], 2, ',', '.');
+        $metricsArray['total_revenue_usd_formatted'] = number_format($metricsArray['total_revenue_usd'], 2, '.', ',');
+
         return view('dashboard.index', [
             'orders'          => $ordersTable,
-            'metrics'         => $metrics->toArray(),
+            'metrics'         => $metricsArray,
             'bestProduct'     => $metrics->bestSellingProduct(),
             'topProducts'     => $metrics->topProductsByRevenue(),
             'topCities'       => $metrics->topCitiesByRevenue(),

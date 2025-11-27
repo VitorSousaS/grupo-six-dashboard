@@ -40,6 +40,24 @@ class OrderMetrics
         });
     }
 
+    public function totalRevenueUsd(): float
+    {
+        return $this->orders->sum(
+            function (array $order) {
+                $local = self::toNumber($order['local_currency_amount'] ?? 0);
+                $rate  = isset($order['exchange_rate_USD'])
+                    ? (float) $order['exchange_rate_USD']
+                    : 0.0;
+
+                if ($rate <= 0) {
+                    return 0.0;
+                }
+
+                return $local * $rate;
+            }
+        );
+    }
+
     public function deliveredOrders(): int
     {
         return $this->orders->filter(
@@ -189,13 +207,24 @@ class OrderMetrics
         );
     }
 
+    protected function calculateTotalUsd(): float
+    {
+        return $this->orders->sum(function ($order) {
+            $value = $order['current_total_price'] ?? 0;
+            $value = str_replace(',', '', $value);
+
+            return (float) $value;
+        });
+    }
+
     public function toArray(): array
     {
         $summary = $this->financialSummary();
 
         return [
             'total_orders'     => $this->totalOrders(),
-            'total_revenue'    => $summary['gross'],
+            'total_revenue'    => $summary['gross'], 
+            'total_revenue_usd'=> $this->totalRevenueUsd(),
             'net_revenue'      => $summary['net'],
             'refund_total'     => $summary['refunds'],
             'delivered_orders' => $this->deliveredOrders(),

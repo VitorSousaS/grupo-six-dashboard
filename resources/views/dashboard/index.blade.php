@@ -34,11 +34,20 @@
             </p>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm px-4 py-3">
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Receita total</p>
-            <p class="mt-2 text-2xl font-semibold">
-                {{ number_format($metrics['total_revenue'], 2, ',', '.') }}
-            </p>
+        <div class="bg-emerald-50 border-l-4 border-emerald-600 rounded-xl p-5 shadow-sm">
+            <h3 class="text-sm font-semibold text-emerald-800">
+                Receita Total
+            </h3>
+
+            <div class="mt-2 space-y-1">
+                <p class="text-2xl font-bold text-emerald-900">
+                    R$ {{ $metrics['total_revenue_formatted'] }}
+                </p>
+
+                <p class="text-sm font-medium text-emerald-800">
+                    ≈ US$ {{ $metrics['total_revenue_usd_formatted'] }}
+                </p>
+            </div>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm px-4 py-3">
