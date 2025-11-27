@@ -159,13 +159,39 @@
     @endif
 
     <div class="bg-white rounded-xl shadow-sm p-4">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-slate-700">
-                Pedidos (primeiros 20)
-            </h3>
-            <span class="text-xs text-slate-400">
-                Total: {{ $metrics['total_orders'] }} pedidos
-            </span>
+        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-3">
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700">
+                    Pedidos (primeiros 20)
+                </h3>
+                <span class="text-xs text-slate-400">
+                    Total: {{ $metrics['total_orders'] }} pedidos
+                </span>
+            </div>
+
+            <form method="GET" action="{{ route('dashboard') }}" class="flex items-center gap-2 text-xs md:text-sm">
+                <label for="status" class="text-slate-600">
+                    Status:
+                </label>
+                <select
+                    id="status"
+                    name="status"
+                    class="border border-slate-300 rounded-md px-2 py-1 text-xs md:text-sm bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+                >
+                    @foreach($allowedStatuses as $value => $label)
+                        <option value="{{ $value }}" {{ $selectedStatus === $value ? 'selected' : '' }}>
+                            {{ $label }}
+                        </option>
+                    @endforeach
+                </select>
+
+                <button
+                    type="submit"
+                    class="inline-flex items-center px-3 py-1 rounded-md bg-slate-900 text-white text-xs md:text-sm hover:bg-slate-800"
+                >
+                    Aplicar
+                </button>
+            </form>
         </div>
 
         <div class="overflow-x-auto">
