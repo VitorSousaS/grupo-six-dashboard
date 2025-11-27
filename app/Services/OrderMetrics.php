@@ -226,6 +226,7 @@ class OrderMetrics
     public function toArray(): array
     {
         $summary = $this->financialSummary();
+        $deliveredRefunded = $this->deliveredRefundedSummary();
 
         return [
             'total_orders'                  => $this->totalOrders(),
@@ -238,15 +239,10 @@ class OrderMetrics
             'net_revenue'                   => $summary['net'],
             'refund_total'                  => $summary['refunds'],
             'refund_rate'                   => $this->refundRate(),
-            'average_ticket'                => $this->averageTicket(),
+            'delivered_refunded_count'      => $deliveredRefunded['count'],
+            'delivered_refunded_total'      => $deliveredRefunded['delivered_total'],
+            'delivered_refunded_rate'       => $deliveredRefunded['rate'],
         ];
-    }
-
-
-    public function averageTicket(): float
-    {
-        $totalOrders = max(1, $this->totalOrders());
-        return $this->totalRevenue() / $totalOrders;
     }
 
     public function topProductsByRevenue(int $limit = 5): Collection
@@ -285,6 +281,53 @@ class OrderMetrics
             ->sortByDesc('revenue')
             ->values()
             ->take($limit);
+    }
+
+    public function deliveredRefundedSummary(): array
+    {
+        $delivered = $this->orders->filter(
+            function (array $order) {
+                $status = $order['fulfillment_status'] ?? null;
+
+                return $status === 'Fully Fulfilled';
+            }
+        );
+
+        $deliveredTotal = $delivered->count();
+
+        if ($deliveredTotal === 0) {
+            return [
+                'count'          => 0,
+                'delivered_total'=> 0,
+                'rate'           => 0.0,
+            ];
+        }
+
+        $deliveredWithRefund = $delivered->filter(
+            function (array $order) {
+                $refunds   = $order['refunds'] ?? [];
+                $lineItems = $order['line_items'] ?? [];
+
+                $hasRefundArray = is_array($refunds) && count($refunds) > 0;
+
+                $hasRefundInLineItems = collect($lineItems)->contains(
+                    function ($item) {
+                        return ($item['is_refunded'] ?? 0) == 1;
+                    }
+                );
+
+                return $hasRefundArray || $hasRefundInLineItems;
+            }
+        );
+
+        $count = $deliveredWithRefund->count();
+        $rate  = ($count / $deliveredTotal) * 100;
+
+        return [
+            'count'           => $count,
+            'delivered_total' => $deliveredTotal,
+            'rate'            => $rate,
+        ];
     }
 
     public function topCitiesByRevenue(int $limit = 10): Collection

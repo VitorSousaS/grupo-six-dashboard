@@ -92,6 +92,8 @@ class DashboardController extends Controller
 
         $metricsArray['refund_rate_formatted'] = number_format($metricsArray['refund_rate'], 2, ',', '.') . '%';
         
+        $metricsArray['delivered_refunded_rate_formatted'] = number_format($metricsArray['delivered_refunded_rate'], 2, ',', '.') . '%';
+
         return view('dashboard.index', [
             'orders'          => $paginatedOrders,
             'search'          => $search,

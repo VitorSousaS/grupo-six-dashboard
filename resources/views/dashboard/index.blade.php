@@ -122,7 +122,7 @@
         </div>
     </section>
 
-    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-2 mb-8">
         @php
             $refundRate = $metrics['refund_rate'] ?? 0;
 
@@ -156,11 +156,50 @@
             </div>
         </div>
 
-        @if(isset($metrics['average_ticket']))
-            <div class="bg-white rounded-xl shadow-sm px-4 py-3">
-                <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Ticket médio</p>
-                <p class="mt-2 text-2xl font-semibold">
-                    {{ number_format($metrics['average_ticket'], 2, ',', '.') }}
+        @if(
+            isset($metrics['delivered_refunded_count']) &&
+            isset($metrics['delivered_refunded_total']) &&
+            $metrics['delivered_refunded_total'] > 0
+        )
+            @php
+                $count = $metrics['delivered_refunded_count'];
+                $totalDelivered = $metrics['delivered_refunded_total'];
+                $rate = $metrics['delivered_refunded_rate_formatted'] ?? (
+                    number_format($metrics['delivered_refunded_rate'] ?? 0, 2, ',', '.') . '%'
+                );
+
+                // Define a "gravidade" visual
+                if ($metrics['delivered_refunded_rate'] >= 10) {
+                    $bg = 'bg-rose-50';
+                    $border = 'border-rose-200';
+                    $badge = 'bg-rose-100 text-rose-700';
+                } elseif ($metrics['delivered_refunded_rate'] >= 5) {
+                    $bg = 'bg-amber-50';
+                    $border = 'border-amber-200';
+                    $badge = 'bg-amber-100 text-amber-700';
+                } else {
+                    $bg = 'bg-slate-50';
+                    $border = 'border-slate-200';
+                    $badge = 'bg-slate-100 text-slate-700';
+                }
+            @endphp
+
+            <div class="{{ $bg }} {{ $border }} border rounded-xl px-4 py-3 flex flex-col gap-1 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <p class="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                        Entregues depois reembolsados
+                    </p>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium {{ $badge }}">
+                        {{ $rate }}
+                    </span>
+                </div>
+
+                <p class="text-sm text-slate-800 mt-1">
+                    {{ $count }} de {{ $totalDelivered }} pedidos entregues foram reembolsados.
+                </p>
+
+                <p class="text-[11px] text-slate-500 mt-1">
+                    Pedidos <span class="font-medium">fulfillment "Fully Fulfilled"</span> que possuem reembolsos.
                 </p>
             </div>
         @endif
@@ -208,19 +247,43 @@
 
         @if(isset($topProducts) && $topProducts->isNotEmpty())
             <div class="bg-white rounded-xl shadow-sm p-4">
-                <h3 class="text-sm font-semibold text-slate-700 mb-3">
-                    Top 5 produtos por receita
-                </h3>
-                <ul class="space-y-1 text-sm">
-                    @foreach($topProducts as $product)
-                        <li class="flex items-center justify-between">
-                            <span class="truncate">
-                                {{ $product['name'] }}
-                            </span>
-                            <span class="ml-3 text-xs text-slate-500">
-                                Qtd: <span class="font-medium text-slate-700">{{ $product['quantity'] }}</span> ·
-                                Receita: <span class="font-medium text-emerald-600">{{ number_format($product['revenue'], 2, ',', '.') }}</span>
-                            </span>
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-slate-700">
+                        Top 5 produtos por receita
+                    </h3>
+                    <span class="text-[11px] uppercase tracking-wide text-slate-400">
+                        Ranqueado por receita (R$)
+                    </span>
+                </div>
+
+                @php
+                    $maxRevenue = $topProducts->max('revenue') ?: 1;
+                @endphp
+
+                <ul class="space-y-2 text-xs md:text-sm">
+                    @foreach($topProducts as $index => $product)
+                        <li class="flex flex-col gap-1">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-semibold">
+                                        {{ $index + 1 }}
+                                    </span>
+                                    <span class="truncate font-medium text-slate-800">
+                                        {{ $product['name'] }}
+                                    </span>
+                                </div>
+
+                                <div class="flex items-center gap-4">
+                                    <div>
+                                        Qtd: <span class="font-semibold text-slate-800">{{ $product['quantity'] }}</span>
+                                    </div>
+                                    <div>
+                                        Receita: <span class="font-semibold text-emerald-700">
+                                            R$ {{ number_format($product['revenue'], 2, ',', '.') }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </li>
                     @endforeach
                 </ul>
