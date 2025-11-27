@@ -10,7 +10,6 @@ class OrderMetrics
         protected Collection $orders
     ) {}
 
-    /** Total de pedidos */
     public function totalOrders(): int
     {
         return $this->orders->count();
@@ -65,9 +64,20 @@ class OrderMetrics
                 $status = $order['fulfillment_status'] ?? null;
                 $statusId = $order['status_id'] ?? null;
 
-                return $status === 'Fully Fulfilled' || $statusId === 'Fulfilled';
+                return $status === 'Fully Fulfilled';
             }
         )->count();
+    }
+
+    public function deliveryRate(): float
+    {
+        $total = $this->totalOrders();
+
+        if ($total === 0) {
+            return 0.0;
+        }
+
+        return ($this->deliveredOrders() / $total) * 100;
     }
 
     public function uniqueCustomers(): int
@@ -225,9 +235,10 @@ class OrderMetrics
             'total_orders'     => $this->totalOrders(),
             'total_revenue'    => $summary['gross'], 
             'total_revenue_usd'=> $this->totalRevenueUsd(),
+            'delivered_orders' => $this->deliveredOrders(),
+            'delivery_rate'     => $this->deliveryRate(),
             'net_revenue'      => $summary['net'],
             'refund_total'     => $summary['refunds'],
-            'delivered_orders' => $this->deliveredOrders(),
             'unique_customers' => $this->uniqueCustomers(),
             'refund_rate'      => $this->refundRate(),
             'average_ticket'   => $this->averageTicket(),

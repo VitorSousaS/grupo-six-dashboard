@@ -50,11 +50,22 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm px-4 py-3">
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Receita líquida</p>
-            <p class="mt-2 text-2xl font-semibold text-emerald-600">
-                {{ number_format($metrics['net_revenue'], 2, ',', '.') }}
-            </p>
+        <div class="bg-sky-50 border-l-4 border-sky-600 rounded-xl p-5 shadow-sm">
+            <h3 class="text-sm font-semibold text-sky-800">
+                Pedidos Entregues
+            </h3>
+
+            <div class="mt-2">
+                <p class="text-2xl font-bold text-sky-900">
+                    {{ $metrics['delivered_orders'] }}
+                </p>
+                <span class="text-xs font-medium text-sky-800">
+                    Taxa de entrega
+                </span>
+                <span class="text-sm font-semibold text-sky-900">
+                    {{ $metrics['delivery_rate_formatted'] }}
+                </span>
+            </div>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm px-4 py-3">
@@ -67,9 +78,9 @@
 
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <div class="bg-white rounded-xl shadow-sm px-4 py-3">
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Pedidos entregues</p>
-            <p class="mt-2 text-2xl font-semibold">
-                {{ $metrics['delivered_orders'] }}
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Receita líquida</p>
+            <p class="mt-2 text-2xl font-semibold text-emerald-600">
+                {{ number_format($metrics['net_revenue'], 2, ',', '.') }}
             </p>
         </div>
 
