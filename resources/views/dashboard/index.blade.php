@@ -87,26 +87,73 @@
         </div>
     </div>
 
+    <section class="mt-6 mb-6">
+        <h2 class="text-sm font-semibold text-slate-700 mb-3">
+            Resumo financeiro
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                    Faturamento bruto
+                </h3>
+                <p class="mt-2 text-2xl font-bold text-slate-900">
+                    R$ {{ $metrics['gross_formatted'] ?? number_format($metrics['total_revenue'], 2, ',', '.') }}
+                </p>
+            </div>
+
+            <div class="bg-rose-50 border border-rose-200 rounded-xl p-5 shadow-sm">
+                <h3 class="text-xs font-semibold text-rose-600 uppercase tracking-wide">
+                    Total reembolsado
+                </h3>
+                <p class="mt-2 text-2xl font-bold text-rose-900">
+                    R$ {{ $metrics['refunds_formatted'] ?? number_format($metrics['refund_total'], 2, ',', '.') }}
+                </p>
+            </div>
+
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-5 shadow-sm">
+                <h3 class="text-xs font-semibold text-emerald-700 uppercase tracking-wide">
+                    Receita líquida
+                </h3>
+                <p class="mt-2 text-2xl font-bold text-emerald-900">
+                    R$ {{ $metrics['net_formatted'] ?? number_format($metrics['net_revenue'], 2, ',', '.') }}
+                </p>
+            </div>
+        </div>
+    </section>
+
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div class="bg-white rounded-xl shadow-sm px-4 py-3">
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Receita líquida</p>
-            <p class="mt-2 text-2xl font-semibold text-emerald-600">
-                {{ number_format($metrics['net_revenue'], 2, ',', '.') }}
-            </p>
-        </div>
+        @php
+            $refundRate = $metrics['refund_rate'] ?? 0;
 
-        <div class="bg-white rounded-xl shadow-sm px-4 py-3">
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total reembolsado</p>
-            <p class="mt-2 text-2xl font-semibold text-rose-600">
-                {{ number_format($metrics['refund_total'], 2, ',', '.') }}
-            </p>
-        </div>
+            if ($refundRate < 10) {
+                $refundLevelText  = 'Saudável';
+                $refundLevelClass = 'bg-emerald-100 text-emerald-800';
+                $cardBorderClass  = 'border-emerald-400';
+            } elseif ($refundRate < 20) {
+                $refundLevelText  = 'Atenção';
+                $refundLevelClass = 'bg-amber-100 text-amber-800';
+                $cardBorderClass  = 'border-amber-400';
+            } else {
+                $refundLevelText  = 'Crítico';
+                $refundLevelClass = 'bg-rose-100 text-rose-800';
+                $cardBorderClass  = 'border-rose-400';
+            }
+        @endphp
+        <div class="bg-white border-l-4 {{ $cardBorderClass }} rounded-xl p-5 shadow-sm">
+            <h3 class="text-sm font-semibold text-slate-800">
+                Taxa de reembolso
+            </h3>
 
-        <div class="bg-white rounded-xl shadow-sm px-4 py-3">
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Taxa de reembolso</p>
-            <p class="mt-2 text-2xl font-semibold {{ $metrics['refund_rate'] > 15 ? 'text-rose-600' : 'text-emerald-600' }}">
-                {{ number_format($metrics['refund_rate'], 2, ',', '.') }}%
-            </p>
+            <div class="mt-2 flex items-baseline justify-between">
+                <p class="text-2xl font-bold text-slate-900">
+                    {{ $metrics['refund_rate_formatted'] ?? (number_format($refundRate, 2, ',', '.') . '%') }}
+                </p>
+
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold {{ $refundLevelClass }}">
+                    {{ $refundLevelText }}
+                </span>
+            </div>
         </div>
 
         @if(isset($metrics['average_ticket']))
@@ -121,17 +168,41 @@
 
     <div class="grid gap-4 lg:grid-cols-2 mb-8">
         @if($bestProduct)
-            <div class="bg-white rounded-xl shadow-sm p-4">
-                <h3 class="text-sm font-semibold text-slate-700 mb-2">
-                    Produto mais vendido
-                </h3>
-                <p class="text-base font-semibold text-slate-900">
-                    {{ $bestProduct['name'] }}
-                </p>
-                <p class="text-sm text-slate-500 mt-1">
-                    Quantidade: <span class="font-medium text-slate-800">{{ $bestProduct['quantity'] }}</span><br>
-                    Receita: <span class="font-medium text-emerald-600">{{ number_format($bestProduct['revenue'], 2, ',', '.') }}</span>
-                </p>
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xs font-semibold text-amber-700 uppercase tracking-wide">
+                            Produto mais vendido
+                        </h3>
+                        <p class="mt-1 text-base font-bold text-amber-900">
+                            {{ $bestProduct['name'] }}
+                        </p>
+                    </div>
+
+                    <div class="inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold">
+                        ⭐ Destaque
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-1">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500">
+                            Quantidade vendida
+                        </p>
+                        <p class="text-lg font-bold text-slate-900">
+                            {{ $bestProduct['quantity'] }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-medium text-slate-500">
+                            Receita gerada
+                        </p>
+                        <p class="text-lg font-bold text-emerald-700">
+                            R$ {{ number_format($bestProduct['revenue'], 2, ',', '.') }}
+                        </p>
+                    </div>
+                </div>
             </div>
         @endif
 

@@ -35,14 +35,6 @@ class OrderMetrics
     {
         return $this->orders->sum(
             function (array $order) {
-                return self::toNumber($order['local_currency_amount'] ?? 0);
-        });
-    }
-
-    public function totalRevenueUsd(): float
-    {
-        return $this->orders->sum(
-            function (array $order) {
                 $local = self::toNumber($order['local_currency_amount'] ?? 0);
                 $rate  = isset($order['exchange_rate_USD'])
                     ? (float) $order['exchange_rate_USD']
@@ -52,9 +44,17 @@ class OrderMetrics
                     return 0.0;
                 }
 
-                return $local * $rate;
+                return $local / $rate;
             }
         );
+    }
+
+    public function totalRevenueUsd(): float
+    {
+        return $this->orders->sum(
+            function (array $order) {
+                return self::toNumber($order['local_currency_amount'] ?? 0);
+        });
     }
 
     public function deliveredOrders(): int
@@ -111,14 +111,11 @@ class OrderMetrics
 
                 return collect($refunds)->sum(
                     function ($refund) {
-                        $value = $refund['local_currency_total_amount'] ?? 
-                                 $refund['total'] ?? 
-                                 $refund['amount'] ?? 0;
-                        return self::toNumber($value);
+                        return self::toNumber($refund['total_amount'] ?? 0);
                     }
                 );
             }
-    );
+        );
 
         $net = $gross - $refundTotal;
 
@@ -131,7 +128,10 @@ class OrderMetrics
 
     public function refundRate(): float
     {
-        $total = max(1, $this->totalOrders());
+        $total = $this->totalOrders();
+        if ($total === 0) {
+            return 0.0;
+        }
 
         $refundedCount = $this->orders->filter(
             function (array $order) {
@@ -221,16 +221,6 @@ class OrderMetrics
                 ];
             }
         );
-    }
-
-    protected function calculateTotalUsd(): float
-    {
-        return $this->orders->sum(function ($order) {
-            $value = $order['current_total_price'] ?? 0;
-            $value = str_replace(',', '', $value);
-
-            return (float) $value;
-        });
     }
 
     public function toArray(): array
