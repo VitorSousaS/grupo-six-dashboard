@@ -68,11 +68,22 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm px-4 py-3">
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total reembolsado</p>
-            <p class="mt-2 text-2xl font-semibold text-rose-600">
-                {{ number_format($metrics['refund_total'], 2, ',', '.') }}
-            </p>
+        <div class="bg-slate-50 border-l-4 border-slate-600 rounded-xl p-5 shadow-sm">
+            <h3 class="text-sm font-semibold text-slate-800">
+                Clientes Únicos
+            </h3>
+
+            <div class="mt-2">
+                <p class="text-2xl font-bold text-slate-900">
+                    {{ $metrics['unique_customers'] }}
+                </p>
+                <span class="text-xs font-medium text-slate-700">
+                    Média de pedidos por cliente
+                </span>
+                <span class="text-sm font-semibold text-slate-900">
+                    {{ $metrics['average_orders_per_customer_formatted'] }}
+                </span>
+            </div>
         </div>
     </div>
 
@@ -85,9 +96,9 @@
         </div>
 
         <div class="bg-white rounded-xl shadow-sm px-4 py-3">
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Clientes únicos</p>
-            <p class="mt-2 text-2xl font-semibold">
-                {{ $metrics['unique_customers'] }}
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total reembolsado</p>
+            <p class="mt-2 text-2xl font-semibold text-rose-600">
+                {{ number_format($metrics['refund_total'], 2, ',', '.') }}
             </p>
         </div>
 

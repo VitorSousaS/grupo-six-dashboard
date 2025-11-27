@@ -43,6 +43,7 @@ class DashboardController extends Controller
         $metricsArray['total_revenue_formatted'] = number_format($metricsArray['total_revenue'], 2, ',', '.');
         $metricsArray['total_revenue_usd_formatted'] = number_format($metricsArray['total_revenue_usd'], 2, '.', ',');
         $metricsArray['delivery_rate_formatted'] = number_format($metricsArray['delivery_rate'], 2, ',', '.') . '%';
+        $metricsArray['average_orders_per_customer_formatted'] = number_format($metricsArray['average_orders_per_customer'], 2, ',', '.');
 
         return view('dashboard.index', [
             'orders'          => $ordersTable,

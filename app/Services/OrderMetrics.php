@@ -82,18 +82,24 @@ class OrderMetrics
 
     public function uniqueCustomers(): int
     {
-        return $this->orders->map(
-            function (array $order) {
-                $customer = $order['customer'] ?? null;
-                if (is_array($customer) && isset($customer['id'])) {
-                    return 'id:' . $customer['id'];
-                }
+        return $this->orders
+            ->map(function (array $order) {
+                return $order['customer']['id'] ?? null;
+            })
+            ->filter() 
+            ->unique()
+            ->count();
+    }
 
-                return '';
-            }
-        )
-        ->unique()
-        ->count();
+    public function averageOrdersPerCustomer(): float
+    {
+        $customers = $this->uniqueCustomers();
+
+        if ($customers === 0) {
+            return 0.0;
+        }
+
+        return $this->totalOrders() / $customers;
     }
 
     public function financialSummary(): array
@@ -232,16 +238,17 @@ class OrderMetrics
         $summary = $this->financialSummary();
 
         return [
-            'total_orders'     => $this->totalOrders(),
-            'total_revenue'    => $summary['gross'], 
-            'total_revenue_usd'=> $this->totalRevenueUsd(),
-            'delivered_orders' => $this->deliveredOrders(),
-            'delivery_rate'     => $this->deliveryRate(),
-            'net_revenue'      => $summary['net'],
-            'refund_total'     => $summary['refunds'],
-            'unique_customers' => $this->uniqueCustomers(),
-            'refund_rate'      => $this->refundRate(),
-            'average_ticket'   => $this->averageTicket(),
+            'total_orders'                  => $this->totalOrders(),
+            'total_revenue'                 => $summary['gross'], 
+            'total_revenue_usd'             => $this->totalRevenueUsd(),
+            'delivered_orders'              => $this->deliveredOrders(),
+            'delivery_rate'                 => $this->deliveryRate(),
+            'unique_customers'              => $this->uniqueCustomers(),
+            'average_orders_per_customer'   => $this->averageOrdersPerCustomer(),
+            'net_revenue'                   => $summary['net'],
+            'refund_total'                  => $summary['refunds'],
+            'refund_rate'                   => $this->refundRate(),
+            'average_ticket'                => $this->averageTicket(),
         ];
     }
 
