@@ -406,4 +406,69 @@ class OrderMetrics
             ->values()
             ->all();
     }
+
+    private static function extractRefundReason(?string $note): ?string
+    {
+        if (empty($note)) {
+            return null;
+        }
+
+        $pos = stripos($note, 'Reason for Contact:');
+
+        if ($pos === false) {
+            return null;
+        }
+
+        $substr = substr($note, $pos + strlen('Reason for Contact:'));
+
+        $parts = preg_split("/\r\n|\n|\r/", $substr);
+        $reason = $parts[0] ?? '';
+
+        $reason = trim($reason, " \t\n\r\0\x0B:/");
+
+        if ($reason === '') {
+            return null;
+        }
+
+        return $reason;
+    }
+
+    public function refundReasonsSummary(): Collection
+    {
+        $reasons = [];
+
+        foreach ($this->orders as $order) {
+            $refunds = $order['refunds'] ?? [];
+
+            if (!is_array($refunds) || empty($refunds)) {
+                continue;
+            }
+
+            foreach ($refunds as $refund) {
+                $note = $refund['note'] ?? null;
+
+                $reason = self::extractRefundReason($note);
+
+                if ($reason === null) {
+                    continue;
+                }
+
+                $key = mb_strtolower($reason);
+
+                if (! isset($reasons[$key])) {
+                    $reasons[$key] = [
+                        'reason' => $reason,
+                        'count'  => 0,
+                    ];
+                }
+
+                $reasons[$key]['count']++;
+            }
+        }
+
+        return collect($reasons)
+            ->values()
+            ->sortByDesc('count')
+            ->values();
+    }
 }

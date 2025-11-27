@@ -106,6 +106,7 @@ class DashboardController extends Controller
             'salesByDay'      => $metrics->salesByDay(),
             'selectedStatus'  => $selectedStatus,
             'allowedStatuses' => $allowedStatuses,
+            'refundReasons'   => $metrics->refundReasonsSummary(),
         ]);
     }
 }

@@ -12,25 +12,54 @@
         </p>
     </div>
 
-    @if(!empty($salesByDay))
-        <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
-            <h3 class="text-sm font-semibold text-slate-700 mb-2">
-                Faturamento por dia
-            </h3>
-            <p class="text-xs text-slate-500 mb-3">
-                Soma de <code>local_currency_amount</code> agrupada pela data de criação do pedido.
-            </p>
-            <div class="h-64">
-                <canvas id="salesByDayChart"></canvas>
+    <section class="mt-6 mb-6">
+        <h2 class="text-sm font-semibold text-slate-700 mb-3">
+            Resumo financeiro
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                    Faturamento bruto
+                </h3>
+                <p class="mt-2 text-2xl font-bold text-slate-900">
+                    R$ {{ $metrics['gross_formatted'] ?? number_format($metrics['total_revenue'], 2, ',', '.') }}
+                </p>
+            </div>
+
+            <div class="bg-rose-50 border border-rose-200 rounded-xl p-5 shadow-sm">
+                <h3 class="text-xs font-semibold text-rose-600 uppercase tracking-wide">
+                    Total reembolsado
+                </h3>
+                <p class="mt-2 text-2xl font-bold text-rose-900">
+                    R$ {{ $metrics['refunds_formatted'] ?? number_format($metrics['refund_total'], 2, ',', '.') }}
+                </p>
+            </div>
+
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-5 shadow-sm">
+                <h3 class="text-xs font-semibold text-emerald-700 uppercase tracking-wide">
+                    Receita líquida
+                </h3>
+                <p class="mt-2 text-2xl font-bold text-emerald-900">
+                    R$ {{ $metrics['net_formatted'] ?? number_format($metrics['net_revenue'], 2, ',', '.') }}
+                </p>
             </div>
         </div>
-    @endif
+    </section>
+
 
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-        <div class="bg-white rounded-xl shadow-sm px-4 py-3">
-            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total de pedidos</p>
-            <p class="mt-2 text-2xl font-semibold">
+        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                Total de pedidos
+            </p>
+
+            <p class="mt-2 text-3xl font-bold text-slate-900">
                 {{ $metrics['total_orders'] }}
+            </p>
+
+            <p class="text-xs text-slate-400 mt-1">
+                Contagem total de pedidos recebidos
             </p>
         </div>
 
@@ -85,124 +114,6 @@
                 </span>
             </div>
         </div>
-    </div>
-
-    <section class="mt-6 mb-6">
-        <h2 class="text-sm font-semibold text-slate-700 mb-3">
-            Resumo financeiro
-        </h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                    Faturamento bruto
-                </h3>
-                <p class="mt-2 text-2xl font-bold text-slate-900">
-                    R$ {{ $metrics['gross_formatted'] ?? number_format($metrics['total_revenue'], 2, ',', '.') }}
-                </p>
-            </div>
-
-            <div class="bg-rose-50 border border-rose-200 rounded-xl p-5 shadow-sm">
-                <h3 class="text-xs font-semibold text-rose-600 uppercase tracking-wide">
-                    Total reembolsado
-                </h3>
-                <p class="mt-2 text-2xl font-bold text-rose-900">
-                    R$ {{ $metrics['refunds_formatted'] ?? number_format($metrics['refund_total'], 2, ',', '.') }}
-                </p>
-            </div>
-
-            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-5 shadow-sm">
-                <h3 class="text-xs font-semibold text-emerald-700 uppercase tracking-wide">
-                    Receita líquida
-                </h3>
-                <p class="mt-2 text-2xl font-bold text-emerald-900">
-                    R$ {{ $metrics['net_formatted'] ?? number_format($metrics['net_revenue'], 2, ',', '.') }}
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-2 mb-8">
-        @php
-            $refundRate = $metrics['refund_rate'] ?? 0;
-
-            if ($refundRate < 10) {
-                $refundLevelText  = 'Saudável';
-                $refundLevelClass = 'bg-emerald-100 text-emerald-800';
-                $cardBorderClass  = 'border-emerald-400';
-            } elseif ($refundRate < 20) {
-                $refundLevelText  = 'Atenção';
-                $refundLevelClass = 'bg-amber-100 text-amber-800';
-                $cardBorderClass  = 'border-amber-400';
-            } else {
-                $refundLevelText  = 'Crítico';
-                $refundLevelClass = 'bg-rose-100 text-rose-800';
-                $cardBorderClass  = 'border-rose-400';
-            }
-        @endphp
-        <div class="bg-white border-l-4 {{ $cardBorderClass }} rounded-xl p-5 shadow-sm">
-            <h3 class="text-sm font-semibold text-slate-800">
-                Taxa de reembolso
-            </h3>
-
-            <div class="mt-2 flex items-baseline justify-between">
-                <p class="text-2xl font-bold text-slate-900">
-                    {{ $metrics['refund_rate_formatted'] ?? (number_format($refundRate, 2, ',', '.') . '%') }}
-                </p>
-
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold {{ $refundLevelClass }}">
-                    {{ $refundLevelText }}
-                </span>
-            </div>
-        </div>
-
-        @if(
-            isset($metrics['delivered_refunded_count']) &&
-            isset($metrics['delivered_refunded_total']) &&
-            $metrics['delivered_refunded_total'] > 0
-        )
-            @php
-                $count = $metrics['delivered_refunded_count'];
-                $totalDelivered = $metrics['delivered_refunded_total'];
-                $rate = $metrics['delivered_refunded_rate_formatted'] ?? (
-                    number_format($metrics['delivered_refunded_rate'] ?? 0, 2, ',', '.') . '%'
-                );
-
-                // Define a "gravidade" visual
-                if ($metrics['delivered_refunded_rate'] >= 10) {
-                    $bg = 'bg-rose-50';
-                    $border = 'border-rose-200';
-                    $badge = 'bg-rose-100 text-rose-700';
-                } elseif ($metrics['delivered_refunded_rate'] >= 5) {
-                    $bg = 'bg-amber-50';
-                    $border = 'border-amber-200';
-                    $badge = 'bg-amber-100 text-amber-700';
-                } else {
-                    $bg = 'bg-slate-50';
-                    $border = 'border-slate-200';
-                    $badge = 'bg-slate-100 text-slate-700';
-                }
-            @endphp
-
-            <div class="{{ $bg }} {{ $border }} border rounded-xl px-4 py-3 flex flex-col gap-1 shadow-sm">
-                <div class="flex items-center justify-between">
-                    <p class="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-                        Entregues depois reembolsados
-                    </p>
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium {{ $badge }}">
-                        {{ $rate }}
-                    </span>
-                </div>
-
-                <p class="text-sm text-slate-800 mt-1">
-                    {{ $count }} de {{ $totalDelivered }} pedidos entregues foram reembolsados.
-                </p>
-
-                <p class="text-[11px] text-slate-500 mt-1">
-                    Pedidos <span class="font-medium">"Fully Fulfilled"</span> que possuem reembolsos.
-                </p>
-            </div>
-        @endif
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2 mb-8">
@@ -290,6 +201,153 @@
             </div>
         @endif
     </div>
+
+    @if(!empty($salesByDay))
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
+            <h3 class="text-sm font-semibold text-slate-700 mb-2">
+                Faturamento por dia
+            </h3>
+            <p class="text-xs text-slate-500 mb-3">
+                Evolução diária do faturamento (em R$), com base na data de criação dos pedidos.
+            </p>
+            <div class="h-64">
+                <canvas id="salesByDayChart"></canvas>
+            </div>
+        </div>
+    @endif
+
+    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-2 mb-8">
+        @php
+            $refundRate = $metrics['refund_rate'] ?? 0;
+
+            if ($refundRate < 10) {
+                $refundLevelText  = 'Saudável';
+                $refundLevelClass = 'bg-emerald-100 text-emerald-800';
+                $cardBorderClass  = 'border-emerald-400';
+            } elseif ($refundRate < 20) {
+                $refundLevelText  = 'Atenção';
+                $refundLevelClass = 'bg-amber-100 text-amber-800';
+                $cardBorderClass  = 'border-amber-400';
+            } else {
+                $refundLevelText  = 'Crítico';
+                $refundLevelClass = 'bg-rose-100 text-rose-800';
+                $cardBorderClass  = 'border-rose-400';
+            }
+        @endphp
+        <div class="bg-white border-l-4 {{ $cardBorderClass }} rounded-xl p-5 shadow-sm">
+            <h3 class="text-sm font-semibold text-slate-800">
+                Taxa de reembolso
+            </h3>
+
+            <div class="mt-2 flex items-baseline justify-between">
+                <p class="text-2xl font-bold text-slate-900">
+                    {{ $metrics['refund_rate_formatted'] ?? (number_format($refundRate, 2, ',', '.') . '%') }}
+                </p>
+
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold {{ $refundLevelClass }}">
+                    {{ $refundLevelText }}
+                </span>
+            </div>
+        </div>
+
+        @if(
+            isset($metrics['delivered_refunded_count']) &&
+            isset($metrics['delivered_refunded_total']) &&
+            $metrics['delivered_refunded_total'] > 0
+        )
+            @php
+                $count = $metrics['delivered_refunded_count'];
+                $totalDelivered = $metrics['delivered_refunded_total'];
+                $rate = $metrics['delivered_refunded_rate_formatted'] ?? (
+                    number_format($metrics['delivered_refunded_rate'] ?? 0, 2, ',', '.') . '%'
+                );
+
+                // Define a "gravidade" visual
+                if ($metrics['delivered_refunded_rate'] >= 10) {
+                    $bg = 'bg-rose-50';
+                    $border = 'border-rose-200';
+                    $badge = 'bg-rose-100 text-rose-700';
+                } elseif ($metrics['delivered_refunded_rate'] >= 5) {
+                    $bg = 'bg-amber-50';
+                    $border = 'border-amber-200';
+                    $badge = 'bg-amber-100 text-amber-700';
+                } else {
+                    $bg = 'bg-slate-50';
+                    $border = 'border-slate-200';
+                    $badge = 'bg-slate-100 text-slate-700';
+                }
+            @endphp
+
+            <div class="{{ $bg }} {{ $border }} border rounded-xl px-4 py-3 flex flex-col gap-1 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <p class="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                        Entregues depois reembolsados
+                    </p>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium {{ $badge }}">
+                        {{ $rate }}
+                    </span>
+                </div>
+
+                <p class="text-sm text-slate-800 mt-1">
+                    {{ $count }} de {{ $totalDelivered }} pedidos entregues foram reembolsados.
+                </p>
+
+                <p class="text-[11px] text-slate-500 mt-1">
+                    Pedidos <span class="font-medium">"Fully Fulfilled"</span> que possuem reembolsos.
+                </p>
+            </div>
+        @endif
+    </div>
+
+    @if(isset($refundReasons) && $refundReasons->isNotEmpty())
+        @php
+            $totalReasons = $refundReasons->sum('count');
+        @endphp
+
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-6 border border-rose-100">
+            <h3 class="text-sm font-semibold text-rose-700 mb-2">
+                Motivos de reembolso
+            </h3>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead>
+                    <tr class="border-b text-xs uppercase text-slate-500">
+                        <th class="py-2 pr-3 text-left">Motivo</th>
+                        <th class="py-2 pr-3 text-center">Ocorrências</th>
+                        <th class="py-2 pr-3 text-right">Percentual</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($refundReasons as $row)
+                        @php
+                            $count = $row['count'];
+                            $percent = $totalReasons > 0
+                                ? ($count / $totalReasons) * 100
+                                : 0;
+                        @endphp
+
+                        <tr class="border-b last:border-0 hover:bg-rose-50/40">
+                            <td class="py-2 pr-3">
+                                <span class="text-slate-800">
+                                    {{ $row['reason'] }}
+                                </span>
+                            </td>
+                            <td class="py-2 pr-3 text-center font-medium">
+                                {{ $count }}
+                            </td>
+                            <td class="py-2 pr-3 text-right">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-xs font-semibold">
+                                    {{ number_format($percent, 2, ',', '.') }}%
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
 
     @if(isset($topCities) && $topCities->isNotEmpty())
         <div class="bg-white rounded-xl shadow-sm p-4 mb-8">
@@ -567,7 +625,11 @@
                                 callbacks: {
                                     label: function (ctx) {
                                         const value = ctx.parsed.y ?? 0;
-                                        return 'Receita: ' + value.toFixed(2);
+                                        return 'Receita: R$ ' + value
+                                        .toLocaleString('pt-BR', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        });
                                     }
                                 }
                             }
